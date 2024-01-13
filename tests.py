@@ -7,11 +7,27 @@ from unitarytest import run
 # Imports des classes, fonctions à tester
 from cards import Card, Deck
 from players import Player
+from game import Game
 
 #-------------------------------
 #---------- Test Card ----------
 #-------------------------------
 class TestCard(unittest.TestCase):
+
+    def test_attributes(self):
+        # Create an instance of MyClass
+        card = Card(value=5, returned=True)
+        
+        # Get all attributes
+        attributes = vars(card)
+        
+        # Assert that all attributes exist
+        for attr, val in attributes.items():
+            self.assertTrue(hasattr(card, attr))
+
+            # Assert that my_attribute is initialized to the expected value
+            if attr == "value": self.assertEqual(card.value, val)
+            if attr == "returned": self.assertEqual(card.returned, val)
 
     def test_eq(self):
         card1 = Card(value=5, returned=True)
@@ -57,6 +73,20 @@ class TestCard(unittest.TestCase):
 #-------------------------------
 class TestDeck(unittest.TestCase):
 
+    def test_attributes(self):
+        # Create an instance of MyClass
+        deck = Deck()
+        
+        # Get all attributes
+        attributes = vars(deck)
+        
+        # Assert that all attributes exist
+        for attr, val in attributes.items():
+            self.assertTrue(hasattr(deck, attr))
+
+            # Assert that my_attribute is initialized to the expected value
+            if attr == "cards": self.assertEqual(deck.cards, val)
+            
     def test_len(self):
         deck = Deck()
         # Assert that the deck contains 150 cards
@@ -160,7 +190,7 @@ class TestPlayer(unittest.TestCase):
             if attr == "hand": self.assertListEqual(player.hand, [])
             if attr == "points": self.assertEqual(player.points, 0)
 
-    def test_draw_cards(self):
+    def test_deal_cards(self):
         player = Player(id=1)
 
         # Assert empty hand when instanciated
@@ -169,12 +199,16 @@ class TestPlayer(unittest.TestCase):
         # Take 12 cards
         num_cards_expected = 12
         deck = Deck()
-        player.draw_cards(deck=deck, num_cards=num_cards_expected)
+        player.deal_cards(deck=deck, num_cards=num_cards_expected)
         
         num_cards_result = len(player.hand)
         # Assert player's hand has 12 cards
 
         self.assertEqual(num_cards_result, num_cards_expected)
+
+        # Assert all card in hand are not returned
+        for card in player.hand:
+            self.assertTrue(card.returned == False)
 
 
     def test_show_hand(self):
@@ -195,11 +229,16 @@ class TestPlayer(unittest.TestCase):
 
         # Assert points when cards on hand
         deck = Deck()
-        player.draw_cards(deck, num_cards=6)
+        player.deal_cards(deck, num_cards=6)
 
+        expected_points = 0
+        result = player.count_points()
+        self.assertEqual(result, expected_points, msg="Dealing 6 cards")
+
+        player.hand[-1].switch_face()
         expected_points = 12
         result = player.count_points()
-        self.assertEqual(result, expected_points, msg="Drawing 6 cards")
+        self.assertEqual(result, expected_points, msg="Dealing 6 cards and switch the last one")
 
     def test_eq(self):
         player1=Player(id=1)
@@ -271,11 +310,51 @@ class TestPlayer(unittest.TestCase):
         self.assertTrue(player1 != player2)
         self.assertFalse(player1 == player2)
 
+class TestGame(unittest.TestCase):
+    players = [Player(id=i) for i in range(2)]
+    deck    = Deck()
+    defausse = []
+    num_cards_before = len(deck)
+
+    def test_attributes(self):
+        game = Game(players=self.players, deck=self.deck, defausse=self.defausse)
+
+        attributes = vars(game)
+
+        for attr, val in attributes.items():
+            if attr == "players": self.assertListEqual(game.players, val)
+            if attr == "deck": self.assertEqual(game.deck, val)
+            if attr == "defausse": self.assertEqual(game.defausse, val)
+
+
+    def test_start(self):
+        game = Game(players=self.players, deck=self.deck, defausse=self.defausse)
+
+        game.start()
+
+        # Assert each player has 12 cards in hand all returned false
+        expected_num_cards_hand = 12
+        for p in self.players:
+            result_num_cards_hand   = len(p.hand)
+            self.assertEqual(result_num_cards_hand, expected_num_cards_hand)
+
+            # Assert all card in hand are not returned
+            for c in p.hand:
+                self.assertTrue(c.returned == False)
+
+        # Assert there are left cards in deck
+        num_players = len(self.players)
+
+        expected_num_cards_draw = expected_num_cards_hand * num_players
+        result_num_cards_deck = len(self.deck)
+        
+        self.assertEqual(result_num_cards_deck, self.num_cards_before - expected_num_cards_draw)
+
 #-------------------------------
 #---------- MAIN PART ----------
 #-------------------------------
 def main():
-    objs = [TestCard, TestDeck, TestPlayer]
+    objs = [TestCard, TestDeck, TestPlayer, TestGame]
     run(objs)
 
 if __name__ == "__main__":

@@ -60,7 +60,7 @@ class Deck:
         return card
     
     def draw(self):
-        card = self.cards.pop()
+        card = self.deal()
         card.switch_face()
         return card
     

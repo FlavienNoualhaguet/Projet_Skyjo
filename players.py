@@ -25,14 +25,13 @@ class Player:
     def __gt__(self, other):
         return not (self <= other)
     
-
-    def draw_cards(self, deck: Deck, num_cards: int = 1):
-        """Draw a specified number of cards from the deck."""
-        drawn_cards = []
+    def deal_cards(self, deck: Deck, num_cards: int = 1):
+        """Deal a specified number of cards from the deck."""
+        deal_cards = []
         for _ in range(num_cards):
-            card = deck.draw()
-            drawn_cards.append(card)
-        self.hand.extend(drawn_cards)
+            card = deck.deal()
+            deal_cards.append(card)
+        self.hand.extend(deal_cards)
 
     def show_hand(self):
         """Display the player's current hand."""
@@ -40,7 +39,7 @@ class Player:
 
     def count_points(self):
         """Count and update the player's points based on the cards in hand."""
-        self.points = sum(card.value for card in self.hand)
+        self.points = sum([card.value if card.returned else 0 for card in self.hand])
         return self.points
     
     def play(self):
