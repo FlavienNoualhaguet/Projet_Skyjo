@@ -1,3 +1,4 @@
+from random import randint
 from typing import List
 from cards import Card, Deck
 
@@ -42,5 +43,10 @@ class Player:
         self.points = sum([card.value if card.returned else 0 for card in self.hand])
         return self.points
     
-    def play(self):
-        pass
+    def count_returned_card(self):
+        return len([c for c in self.hand if c.is_returned()])
+    
+    def start(self):
+        for _ in range(2):
+            i = randint(0, len(self.hand)-1)
+            self.hand[i].switch_face()

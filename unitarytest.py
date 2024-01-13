@@ -11,15 +11,16 @@ class CustomTestResult(unittest.TextTestResult):
     def startTest(self, test):
         self.start_time = time.time()
         super().startTest(test)
-        
+
+        # Set the current class name for this test
+        self.current_class_name = test.__class__.__name__
+
         if self.global_start_time is None:
-            module_name = test.__class__.__module__
             self.global_start_time = self.start_time
             self.module_name = test.__class__.__module__
-            self.class_name  = test.__class__.__name__
 
             current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            main_msg = f"===      Started Test at {current_time} on  {self.module_name}.{self.class_name}     ======"
+            main_msg = f"===      Started Test at {current_time} on  {self.module_name}     ======"
             headers = "="*len(main_msg)
             msg = "\n".join([headers, headers, main_msg, headers, headers])
 
@@ -41,10 +42,8 @@ class CustomTestResult(unittest.TextTestResult):
         elapsed_time = time.time() - self.start_time
         start_time   = datetime.fromtimestamp(self.start_time).strftime("%Y-%m-%d %H:%M:%S.%f")
         method_name  = test._testMethodName
-        formatted_method_name = f"{self.module_name}.{self.class_name}.{method_name:<20}"
+        formatted_method_name = f"{self.module_name}.{self.current_class_name}.{method_name:<20}"
         sys.stdout.write(f"\n[{start_time}] Testing: {formatted_method_name}: run in {elapsed_time:.5f}s; {result}")
-        sys.stdout.flush()
-        sys.stdout.flush()
 
 class SortedTestMethodLoader(unittest.TestLoader):
     def getTestCaseNames(self, testCaseClass):
@@ -52,13 +51,16 @@ class SortedTestMethodLoader(unittest.TestLoader):
         return sorted(test_names, key=lambda x: len(x))
 
 def run(iterable):
-    for i,obj in enumerate(iterable):
-        if i > 0:
-            sys.stdout.write("\n")
+    runner = unittest.TextTestRunner(resultclass=CustomTestResult, stream=sys.stdout, verbosity=1, failfast=True)
+    all_tests = unittest.TestSuite()
 
+    for obj in iterable:
         suite = SortedTestMethodLoader().loadTestsFromTestCase(obj)
-        # Utiliser buffer=True et failfast=True
-        runner = unittest.TextTestRunner(resultclass=CustomTestResult, stream=sys.stdout, verbosity=1, failfast=True)
+        all_tests.addTests(suite)
 
-        # Exécuter les tests
-        result = runner.run(suite)
+    result = runner.run(all_tests)
+
+    if not result.wasSuccessful():
+        sys.exit(1)  # Stop the entire test run if any test fails
+    else:
+        sys.exit(0)

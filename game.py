@@ -18,3 +18,7 @@ class Game:
         for _ in range(12):
             for player in self.players:
                 player.deal_cards(deck=self.deck, num_cards=1)
+
+    def start_players(self):
+        for player in self.players:
+            player.start()

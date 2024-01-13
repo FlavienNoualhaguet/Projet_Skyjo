@@ -29,6 +29,20 @@ class TestCard(unittest.TestCase):
             if attr == "value": self.assertEqual(card.value, val)
             if attr == "returned": self.assertEqual(card.returned, val)
 
+    def test_repr(self):
+        card1 = Card(5, returned=True)
+        card2 = Card(5, returned=False)
+
+        expected_card_one = "Card(5)"
+        expected_card_two = "Card(--)"
+
+        result_one = repr(card1)
+        result_two = repr(card2)
+
+        self.assertEqual(result_one, expected_card_one, msg="Card returned True")
+        self.assertEqual(result_two, expected_card_two, msg = "Card returned False")
+
+
     def test_eq(self):
         card1 = Card(value=5, returned=True)
         card2 = Card(value=5, returned=False)
@@ -208,7 +222,7 @@ class TestPlayer(unittest.TestCase):
 
         # Assert all card in hand are not returned
         for card in player.hand:
-            self.assertTrue(card.returned == False)
+            self.assertFalse(card.is_returned())
 
 
     def test_show_hand(self):
@@ -310,14 +324,53 @@ class TestPlayer(unittest.TestCase):
         self.assertTrue(player1 != player2)
         self.assertFalse(player1 == player2)
 
+    def test_count_returned_card(self):
+        player = Player(id=1)
+        deck   = Deck()
+        player.deal_cards(deck, 12)
+
+        # Assert 0 card are returned when dealed
+        expected_returned_card = 0
+        result_num_returned_card = player.count_returned_card()
+
+        self.assertEqual(result_num_returned_card, expected_returned_card)
+
+        # Assert 4 cards are returned when switch face         
+        for i in range(4):
+            player.hand[i].switch_face()
+        
+        expected_returned_card = 4
+        result_num_returned_card = player.count_returned_card()
+
+        self.assertEqual(result_num_returned_card, expected_returned_card)
+
+
+    def test_start(self):
+        player = Player(id=1)
+        player.deal_cards(Deck(), 12)
+
+        excepted_returned_card = 0
+        result_num_returned_card = player.count_returned_card()
+
+        self.assertEqual(result_num_returned_card, excepted_returned_card)
+
+        # Assert player.start() returned 2 cards
+        player.start()
+        excepted_returned_card = 2
+        result_num_returned_card = player.count_returned_card()
+
+        self.assertEqual(result_num_returned_card, excepted_returned_card)
+
 class TestGame(unittest.TestCase):
-    players = [Player(id=i) for i in range(2)]
-    deck    = Deck()
-    defausse = []
-    num_cards_before = len(deck)
+
 
     def test_attributes(self):
-        game = Game(players=self.players, deck=self.deck, defausse=self.defausse)
+        players = [Player(id=i) for i in range(2)]
+        deck    = Deck()
+        defausse = []
+        num_cards_before = len(deck)
+
+        game = Game(players=players, deck=deck, defausse=defausse)
 
         attributes = vars(game)
 
@@ -328,27 +381,49 @@ class TestGame(unittest.TestCase):
 
 
     def test_start(self):
-        game = Game(players=self.players, deck=self.deck, defausse=self.defausse)
+        players = [Player(id=i) for i in range(2)]
+        deck    = Deck()
+        defausse = []
+        num_cards_before = len(deck)
+        
+        game = Game(players=players, deck=deck, defausse=defausse)
 
         game.start()
 
         # Assert each player has 12 cards in hand all returned false
         expected_num_cards_hand = 12
-        for p in self.players:
+        for p in players:
             result_num_cards_hand   = len(p.hand)
             self.assertEqual(result_num_cards_hand, expected_num_cards_hand)
 
             # Assert all card in hand are not returned
             for c in p.hand:
-                self.assertTrue(c.returned == False)
+                self.assertFalse(c.is_returned())
 
         # Assert there are left cards in deck
-        num_players = len(self.players)
+        num_players = len(players)
 
         expected_num_cards_draw = expected_num_cards_hand * num_players
-        result_num_cards_deck = len(self.deck)
+        result_num_cards_deck = len(deck)
         
-        self.assertEqual(result_num_cards_deck, self.num_cards_before - expected_num_cards_draw)
+        self.assertEqual(result_num_cards_deck, num_cards_before - expected_num_cards_draw)
+
+    def test_start_players(self):
+        players = [Player(id=i) for i in range(2)]
+        deck = Deck()
+        defausse = []
+
+        # Initialise game and start game
+        game = Game(players, deck, defausse)
+        game.start()
+
+        # Start each player
+        game.start_players()
+
+        expected_returned_card = 2
+        for player in players:
+            result_num_returned_card = player.count_returned_card()
+            self.assertEqual(result_num_returned_card, expected_returned_card)
 
 #-------------------------------
 #---------- MAIN PART ----------

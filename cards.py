@@ -7,6 +7,10 @@ class Card:
     value: int
     returned: bool
 
+    def __repr__(self):
+        classname = __class__.__name__
+        return f"{classname}({self.value if self.returned else '--'})" 
+
     def __eq__(self, other):
         return self.value == other.value
     
@@ -26,10 +30,10 @@ class Card:
         return not (self <= other)
 
     def is_returned(self):
-        return self.is_returned
+        return self.returned
     
     def switch_face(self):
-        self.returned = not self.returned
+        self.returned = not self.returned      
 
 @dataclass
 class Deck:
