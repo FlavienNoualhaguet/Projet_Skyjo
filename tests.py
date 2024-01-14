@@ -425,6 +425,19 @@ class TestGame(unittest.TestCase):
             result_num_returned_card = player.count_returned_card()
             self.assertEqual(result_num_returned_card, expected_returned_card)
 
+
+    def test_play(self):
+        players = [Player(id=i**2) for i in range(2,4)]
+        deck    = Deck()
+        game    = Game(players, deck, [])
+
+        game.start()
+        game.start_players()
+        
+        for (i ,player) in enumerate(players):
+            print(player.show_hand())
+        print(game.play())
+        
 #-------------------------------
 #---------- MAIN PART ----------
 #-------------------------------
