@@ -25,6 +25,6 @@ class Game:
 
     def play(self):
         # Starting player is the one having the less points
-        id_player_starting = min(enumerate(self.players), 
+        i_player_starting, _ = min(enumerate(self.players), 
                                  key=lambda x: x[1].count_points())
-        return id_player_starting
+        return i_player_starting

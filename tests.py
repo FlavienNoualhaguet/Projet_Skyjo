@@ -1,5 +1,6 @@
 # Import module unittest de python
 import unittest
+from random import randint
 
 # Import de la fonction test
 from unitarytest import run
@@ -8,7 +9,7 @@ from unitarytest import run
 from cards import Card, Deck
 from players import Player
 from game import Game
-
+from algoritm import alphabeta
 #-------------------------------
 #---------- Test Card ----------
 #-------------------------------
@@ -433,16 +434,59 @@ class TestGame(unittest.TestCase):
 
         game.start()
         game.start_players()
-        
+        i_random = randint(0, len(players)-1)
         for (i ,player) in enumerate(players):
-            print(player.show_hand())
-        print(game.play())
-        
+            if i == i_random:
+                for card in player.hand:
+                    if card.is_returned(): card.value = -10
+        i_player_starting = game.play()
+        excepted_i        = i_random
+        self.assertEqual(i_player_starting, excepted_i)
+
+class TestAlgorithm(unittest.TestCase):
+
+    def test_alphabeta(self):
+        class GameState:
+            def __init__(self, i):
+                self.i = i 
+
+        def generate_moves(state):
+            # Générateur de mouvements : Retourne une liste de mouvements possibles
+            # Dans cet exemple, les mouvements sont simplement des incréments de score
+            return [1, 2, 3]
+
+        def play_move(move, state):
+            # Fonction de jeu : Joue un mouvement et retourne le nouvel état du jeu
+            if move % 2 == 0: 
+                return GameState(state.i + 2*move)
+            else:
+                return GameState(state.i + move)
+
+        def evaluate(state):
+            return state.i
+
+        def is_game_finished(state, moves):
+            # Fonction de jeu terminé : Le jeu se termine si l'un des joueurs atteint un score cible (10 dans cet exemple)
+            if evaluate(state) >= float('inf'):
+                return 1
+            else:
+                return -1
+
+        # Maintenant, vous pouvez utiliser ces composants pour tester votre algorithme Alpha-Bêta
+        initial_state = GameState(i=1)
+        alpha = float('-inf')
+        beta = float('inf')
+        height = 2  # Hauteur maximale de l'arbre de recherche
+
+        result = alphabeta(initial_state, generate_moves, play_move, evaluate, is_game_finished, alpha, beta, height)
+        excepted_result = 2
+        self.assertEqual(result, excepted_result)
+
 #-------------------------------
 #---------- MAIN PART ----------
 #-------------------------------
 def main():
-    objs = [TestCard, TestDeck, TestPlayer, TestGame]
+    objs = [TestCard, TestDeck, TestPlayer, TestGame, TestAlgorithm]
     run(objs)
 
 if __name__ == "__main__":

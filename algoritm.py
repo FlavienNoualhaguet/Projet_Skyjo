@@ -4,13 +4,13 @@ def alphabeta(t, fgenerator, fplay, feval, is_game_finished, alpha, beta, height
     # AlphaBeta Rec
     def alpha_beta_rec(t, a, b, h):
         is_computer = h%2 == 0
-        is_finished = is_game_finished(t, moves)
         moves = fgenerator(t)
+        is_finished = is_game_finished(t, moves)
         if is_finished == 1:
             if is_computer:
-                return (-Score.inifinity.value + h, [])
+                return (-Score.infinity.value + h, [])
             else:
-                return (Score.inifinity.value - 1 - h, [])
+                return (Score.infinity.value - 1 - h, [])
         else:
             if is_finished == 0: return (0, [])
             else:

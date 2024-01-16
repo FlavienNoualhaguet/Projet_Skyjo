@@ -44,9 +44,8 @@ class Player:
         return self.points
     
     def count_returned_card(self):
-        return len([c for c in self.hand if c.is_returned()])
+        returned_cards = [c for c in self.hand if c.is_returned()]
+        return len(returned_cards)
     
     def start(self):
-        for _ in range(2):
-            i = randint(0, len(self.hand)-1)
-            self.hand[i].switch_face()
+        for i in range(2): self.hand[i].switch_face()
